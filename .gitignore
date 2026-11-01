@@ -27,3 +27,14 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Java ###
+*.class
+hs_err_pid*
+
+### Simulator output ###
+outputfiles/
+
+### Windows ###
+Thumbs.db
+Desktop.ini
