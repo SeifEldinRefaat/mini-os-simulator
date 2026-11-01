@@ -38,3 +38,6 @@ outputfiles/
 ### Windows ###
 Thumbs.db
 Desktop.ini
+
+###IntelliJ###
+.idea
