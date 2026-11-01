@@ -34,6 +34,7 @@ hs_err_pid*
 
 ### Simulator output ###
 outputfiles/
+/data.txt
 
 ### Windows ###
 Thumbs.db

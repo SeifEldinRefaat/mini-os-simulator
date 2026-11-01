@@ -1,111 +1,49 @@
-import jdk.jshell.execution.Util;
-
 import java.io.*;
 import java.util.Scanner;
 
+/**
+ * The I/O primitives available to running processes. Instruction semantics live
+ * in Interpreter; this class only performs the underlying operations.
+ */
 public class SystemCall {
-    //String type;
+
+    // One shared Scanner: constructing a new one per read and letting it go out
+    // of scope can close System.in for every later read.
+    private static final Scanner STDIN = new Scanner(System.in);
 
     public SystemCall() {
-
     }
 
+    /** Reads the whole file, not just its first line, so a multi-line file prints in full. */
     public static String readFile(String path) throws IOException {
         File f = new File(path);
-        FileReader fr = new FileReader(f);
-        BufferedReader br = new BufferedReader(fr);
-        return br.readLine();
+        if (!f.exists()) return "";
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new FileReader(f))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (sb.length() > 0) sb.append(System.lineSeparator());
+                sb.append(line);
+            }
+        }
+        return sb.toString();
     }
 
     public static void writeFile(String path, String data) throws IOException {
-        File f = new File(path);
-        FileWriter fw = new FileWriter(f, true);
-        fw.write(data);
-        fw.write('\n');
+        // try-with-resources: the original never closed the writer, so data could
+        // stay buffered and never reach disk. Overwrites rather than appends, as
+        // the brief specifies the file is always created.
+        try (FileWriter fw = new FileWriter(new File(path), false)) {
+            fw.write(data);
+            fw.write('\n');
+        }
     }
 
-    public static void printOnScreen(String s){
+    public static void printOnScreen(String s) {
         System.out.println(s);
     }
 
-    public static String readUser(){
-        Scanner sc = new Scanner(System.in);
-        return sc.nextLine();
+    public static String readUser() {
+        return STDIN.hasNextLine() ? STDIN.nextLine() : "";
     }
-
-    public void readMemory(){
-
-    }
-
-    public void writeMemory(){
-
-    }
-
-//    public static boolean isNumeric(String str) {
-//        try {
-//            Integer.parseInt(str);
-//            return true;
-//        } catch(NumberFormatException e){
-//            return false;
-//        }
-//    }
-    public static Word executeSystemCall(String call, int processID) throws IOException {
-        String[] parts = call.split(" ");
-        Word word1 = null;
-        switch (parts[0]) {
-            case "print":
-                printOnScreen(parts[1]);
-                break;
-            case "assign":
-                Object data;
-                String Vname = parts[1];
-                if (parts[2].equals("input")) {
-                    System.out.println("Please enter a value");
-                    data = readUser();
-                } else if (parts[2].equals("readFile")) {
-                    data = null; //to be executed by readFile
-
-                } else {
-                    boolean isNumeric = parts[2].chars().allMatch(Character::isDigit);
-                    if (isNumeric) {
-                        data = Integer.parseInt(parts[2]);
-                    } else {
-                        data = parts[2];
-                    }
-                }
-                word1 = new Word(Vname, data);
-                break;
-            case "writeFile", "readFile":
-                //writeFile(); To be executed by Daddy Hazem Sherif
-                break;
-            //            else{
-//                data = call.substring(9,call.length());
-//            }
-//        }
-//        if (call.startsWith("readFile")){
-//            readFile(call.substring(9,call.length()));
-//        }
-//        if(call.startsWith("writeFile")){
-//            writeFile(call.substring(10,11),call.substring(12,call.length()));
-//        }
-            case "printFromTo":
-                int x = Integer.parseInt(parts[1]);
-                int y = Integer.parseInt(parts[2]);
-                for (int i = x; i < y + 1; ++i) {
-                    System.out.print(i);
-                }
-                //        }
-
-//        if(call.startsWith("semSignal")){
-//
-                break;
-            case "semWait", "semSignal":
-
-
-                break;
-        }
-        return word1;
-    }
-
 }
-
